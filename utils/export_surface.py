@@ -12,7 +12,7 @@ export_folder = str(Path.cwd())+"/../datasets/"
 export_path = "dataset.csv"
 memory_length = 7
 
-datapaths = ["2016S1_NB_SURFACE.txt","2016S2_NB_SURFACE.txt"]
+datapaths = ["2016S1_NB_SURFACE.txt","2016S2_NB_SURFACE.txt","2017S1_NB_SURFACE.txt","2017_T3_NB_SURFACE.txt","2017_T4_NB_SURFACE.txt"]
 
 if(len(sys.argv)==1):
     print("")
@@ -21,6 +21,7 @@ if(len(sys.argv)==1):
     continue_str = input("Press enter to continue, type in 0 to exit : ")
     if(continue_str=="0"):
         exit()
+    print("")
 elif(len(sys.argv)==2):
     export_path = sys.argv[-1]
 elif(len(sys.argv)==3):
