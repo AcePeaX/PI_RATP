@@ -96,7 +96,6 @@ def evaluate_performance(y_test, y_pred):
     print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, y_pred))
     print('Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred))
     print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
-    print('\n')
 
 def help():
     print("Type in some of the following : ")
@@ -115,7 +114,7 @@ x = data.drop(columns=[regression_column])
 
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.03, random_state=4)
 
-y_pred = y_test
+y_pred = np.array(y_test)
 
 models = ["Linear","Knn"]
 model_used = 0
@@ -142,10 +141,41 @@ def test_knn(n_neighbors=5):
     regressor = KNeighborsRegressor(n_neighbors=n_neighbors)
     y_pred = fit_and_predict(X_train, y_train, X_test, y_test, regressor)
 
+
+count = 0
 def evaluate():
     global y_pred
     print("Performance for "+models[model_used]+"model : ")
     evaluate_performance(y_test, y_pred)
+    print('\nUse arrow keys up and down to navigate, and Q to exit\n')
+    try:    
+        from pynput.keyboard import Key, Listener
+    except e:
+        print('Execute : `pip install pynput` to get better control\n')
+        return
+        
+    y_test_array = np.array(y_test)
+    def handlePress(key):
+        global count
+        n = len(y_test)
+        if key==Key.down:
+            count+=1
+            print('\b\b\b\b\033[1A                       \r',y_test_array[count],' -> ',y_pred[count],sep='',end='\n')
+        elif key==Key.up:
+            count-=1
+            print('\b\b\b\b\033[1A                       \r',y_test_array[count],' -> ',y_pred[count],sep='',end='\n')
+            
+        else:
+            try:
+                if key.char=='q' or key.char=='Q':
+                    print('\n')
+                    return False
+            except Exception:
+                print('',end='')
+    with Listener(on_press = handlePress) as listener:
+        listener.join()
+    print("")
+        
 
 def normalize():
     global X_train
@@ -157,6 +187,7 @@ def normalize():
         print("Nothing Done! \n")
         return
     X_train, X_test = normalize_manual(X_train,X_test,resp)
+    print("Normalized!\n")
     
 
 
