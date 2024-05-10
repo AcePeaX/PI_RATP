@@ -48,7 +48,7 @@ def normalize_manual(train_data, test_data, method='mean_std'):
 
 
 
-import_folder = str(Path.cwd())+"/../datasets/"
+import_folder = str(Path(__file__).parent.resolve())+"/../datasets/"
 import_path = "dataset.csv"
 
 regression_column = "NBRE_VALIDATION"
@@ -115,13 +115,23 @@ data = pd.read_csv(import_folder+import_path)
 
 if 'Unnamed: 0' in data.columns:
     data = data.drop(columns=['Unnamed: 0'])
+if 'DATE' in data.columns:
+    data = data.drop(columns=['DATE'])
 if "LIBELLE_LIGNE" in data.columns:
     data = data.drop(columns=["LIBELLE_LIGNE"])
 if add_weekdays:
     data["IS_SUNDAY"] = 0
     data["IS_SATURDAY"] = 0
+    data["IS_MONDAY"] = 0
+    data["IS_TUESDAY"] = 0
+    data["IS_WEDNESDAY"] = 0
+    data["IS_THURSDAY"] = 0
     data.loc[data["WEEKDAY"]==5, "IS_SATURDAY"] = 1
     data.loc[data["WEEKDAY"]==6, "IS_SUNDAY"] = 1
+    data.loc[data["WEEKDAY"]==0, "IS_MONDAY"] = 1
+    data.loc[data["WEEKDAY"]==1, "IS_TUESDAY"] = 1
+    data.loc[data["WEEKDAY"]==2, "IS_WEDNESDAY"] = 1
+    data.loc[data["WEEKDAY"]==3, "IS_THURSDAY"] = 1
 if "WEEKDAY" in data.columns:
     data = data.drop(columns=["WEEKDAY"])
 y = data[regression_column]

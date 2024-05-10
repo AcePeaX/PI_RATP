@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 
-export_folder = str(Path.cwd())+"/../datasets/"
+export_folder = str(Path(__file__).parent.resolve())+"/../datasets/"
 export_path = "dataset.csv"
 memory_length = 7
 
@@ -35,6 +35,43 @@ else:
 
 
 
+def is_school_holiday(date):
+    """
+        Return is a date is a school holiday, took thos dates from official resources
+        Parameters
+        ----------
+        date : string
+            The date of the day in format YYYY/MM/DD
+    """
+    dates = date.split("/")
+    year = int(dates[0])
+    month = int(dates[1])
+    day = int(dates[2])
+    if year==2016:
+        if (month==2 and day>=21) or (month==3 and day<=6):
+            return True
+        elif (month==4 and day>=17) or (month==5 and day<=1):
+            return True
+        elif (month==7 and day>=6) or (month==8):
+            return True
+        elif (month==10 and day>=20) or (month==1 and day<=2):
+            return True
+        elif (month==12 and day>=17):
+            return True
+    elif year==2017:
+        if month==1 and day<=2:
+            return True
+        elif month==2 and (day>=4 and day<=19):
+            return True
+        elif month==4 and (day>=1 and day<=17):
+            return True
+        elif (month==7 and day>=8) or (month==8 and day<=30):
+            return True
+        elif (month==10 and day>=21) or (month==11 and day<=5):
+            return True
+        elif month==12 and day>=23:
+            return True
+    return False
 
 
 
@@ -49,13 +86,14 @@ def parse_prefix(line, fmt):
             raise
     return t
 
+debug_date = True
 
 def load_dataset(memory_length=7):
     
     dataList = []
     print("Reading data...")
     for datapath in datapaths:
-        data = pd.read_csv(str(Path.cwd())+"/../raw_datasets/"+datapath, sep='\t', lineterminator='\r', encoding='latin-1')
+        data = pd.read_csv(str(Path(__file__).parent.resolve())+"/../raw_datasets/"+datapath, sep='\t', lineterminator='\r', encoding='latin-1')
         data = data[:len(data)-1]
         data = data.drop(data[data.LIBELLE_LIGNE=='NON DEFINI'].index)
         dataList.append(data)
@@ -95,6 +133,8 @@ def load_dataset(memory_length=7):
     Ls = [[] for i in range(memory_length+1)]
     libelle_list = []
     weekday = []
+    isSchoolHoliday = []
+    dateList = []
     keys = dataGroup.groups.keys()
     for libelle in tqdm(keys):
         temp_df = dataGroup.get_group(libelle)
@@ -108,6 +148,8 @@ def load_dataset(memory_length=7):
                 Ls[memory_length-c-1].append(row['NB_VALD'])
                 libelle_list.append(libelle)
                 weekday.append(parse_prefix(row['JOUR'], '%Y/%m/%d').weekday())
+                isSchoolHoliday.append(1 if is_school_holiday(row['JOUR']) else 0)
+                dateList.append(row['JOUR'])
                 
             else:
                 libelle_list.append(libelle)
@@ -115,21 +157,31 @@ def load_dataset(memory_length=7):
                     Ls[i].append(Ls[i+1][-1])
                 Ls[-1].append(row['NB_VALD'])
                 weekday.append(parse_prefix(row['JOUR'], '%Y/%m/%d').weekday())
+                isSchoolHoliday.append(1 if is_school_holiday(row['JOUR']) else 0)
+                dateList.append(row['JOUR'])
             c+=1
+
     
-    d = {"LIBELLE_LIGNE": libelle_list, 'WEEKDAY': weekday}
+    d = {"DATE":dateList,"LIBELLE_LIGNE": libelle_list, 'WEEKDAY': weekday, 'IS_SCHOOL_HOLIDAY':isSchoolHoliday}
     for i in range(memory_length):
         d["DAY_"+str(i+1)] = Ls[i]
     d["NBRE_VALIDATION"] = Ls[-1]
     final_data = pd.DataFrame(data=d)
+
+    print("Sorting...")
+
+    final_data = final_data.sort_values(by=['DATE'])
+    final_data['DATE'] = final_data['DATE'].apply(change_date_format)
+
     return final_data
 
 
 data = load_dataset(memory_length)
 
+
 print("Saving...")
 
-data.to_csv(export_folder+export_path)
+data.to_csv(export_folder+export_path, index=False)
 
 print("Done")
 
