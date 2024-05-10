@@ -92,7 +92,7 @@ def fit_and_predict(X_train, y_train, X_test, y_test, regressor, verbose=False):
 
 
 def evaluate_performance(y_test, y_pred):
-    print('\n\n')
+    print('\n')
     print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, y_pred))
     print('Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred))
     print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
@@ -142,9 +142,11 @@ def test_knn(n_neighbors=5):
     y_pred = fit_and_predict(X_train, y_train, X_test, y_test, regressor)
 
 
-count = 0
+count = -1
 def evaluate():
     global y_pred
+    global count
+    count = -1
     print("Performance for "+models[model_used]+"model : ")
     evaluate_performance(y_test, y_pred)
     print('\nUse arrow keys up and down to navigate, and Q to exit\n')
@@ -157,13 +159,16 @@ def evaluate():
     y_test_array = np.array(y_test)
     def handlePress(key):
         global count
-        n = len(y_test)
         if key==Key.down:
             count+=1
-            print('\b\b\b\b\033[1A                       \r',y_test_array[count],' -> ',y_pred[count],sep='',end='\n')
+            if count>=len(y_test):
+                count -= len(y_test)
+            print('\b\b\b\b\033[1A                              \r',str(count+1)+'/'+str(len(y_test))+" : ",y_test_array[count],' -> ',round(y_pred[count],1),sep='',end='\n')
         elif key==Key.up:
             count-=1
-            print('\b\b\b\b\033[1A                       \r',y_test_array[count],' -> ',y_pred[count],sep='',end='\n')
+            if count<0:
+                count += len(y_test)
+            print('\b\b\b\b\033[1A                              \r',str(count+1)+'/'+str(len(y_test))+" : ",y_test_array[count],' -> ',round(y_pred[count],1),sep='',end='\n')
             
         else:
             try:
@@ -172,6 +177,7 @@ def evaluate():
                     return False
             except Exception:
                 print('',end='')
+    handlePress(Key.down)
     with Listener(on_press = handlePress) as listener:
         listener.join()
     print("")
@@ -183,6 +189,8 @@ def normalize():
     resp = input("This operation cannot be undone in this instance. \nChoose either 'mean_std' or 'maxmin' : ")
     if(resp==""):
         resp="mean_std"
+    elif resp=="maxmin":
+        resp=resp
     elif resp!="":
         print("Nothing Done! \n")
         return
