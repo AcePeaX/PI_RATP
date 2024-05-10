@@ -15,3 +15,13 @@ So far, we use the datasets:
 
 
 ## Files description
+
+This project is divided into two main script categories, the `utils` and the `algorithms`.
+
+In the `utils` folder, you will find some scripts to *bake* the data. Here are the scripts of `utils` :
+- `download_datasets.py` : A script to easily download all the datasets files.
+- `export_surface.py` : A script to bake the surface dataset. It mainly regroups all the files, combines the data to create the structure used for regression and other algorithms.
+<br/>
+
+In the `algorithms` folder, there are the **algorithms** used for learning and fitting the models.
+- `regression.py` provides an interactive menu to test and run both **linear** and **knn** regression.
