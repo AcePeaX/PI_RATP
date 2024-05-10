@@ -12,7 +12,10 @@ export_folder = str(Path(__file__).parent.resolve())+"/../datasets/"
 export_path = "dataset.csv"
 memory_length = 7
 
-datapaths = ["2016S1_NB_SURFACE.txt","2016S2_NB_SURFACE.txt","2017S1_NB_SURFACE.txt","2017_T3_NB_SURFACE.txt","2017_T4_NB_SURFACE.txt"]
+
+datapaths_directory = "surface/"
+datapaths = ["data-rs-2016/2016S1_NB_SURFACE.txt","data-rs-2016/2016S2_NB_SURFACE.txt",
+             "data-rs-2017/2017S1_NB_SURFACE.txt","data-rs-2017/2017_T3_NB_SURFACE.txt","data-rs-2017/2017_T4_NB_SURFACE.txt"]
 
 if(len(sys.argv)==1):
     print("")
@@ -91,13 +94,17 @@ debug_date = True
 def load_dataset(memory_length=7):
     
     dataList = []
-    print("Reading data...")
+    print("Loading data...")
     for datapath in datapaths:
-        data = pd.read_csv(str(Path(__file__).parent.resolve())+"/../raw_datasets/"+datapath, sep='\t', lineterminator='\r', encoding='latin-1')
-        data = data[:len(data)-1]
-        data = data.drop(data[data.LIBELLE_LIGNE=='NON DEFINI'].index)
-        dataList.append(data)
-
+        try:
+            data = pd.read_csv(str(Path(__file__).parent.resolve())+"/../raw_datasets/"+datapaths_directory+datapath, sep='\t', lineterminator='\r', encoding='latin-1')
+            data = data[:len(data)-1]
+            data = data.drop(data[data.LIBELLE_LIGNE=='NON DEFINI'].index)
+            dataList.append(data)
+            print("Done reading \033[1m"+datapaths_directory+datapath+"\033[0m")
+        except Exception:
+            print("File\033[1m",datapaths_directory+datapath,"\033[0mnot found, make sure you have downloaded it with \033[1mdownload_datasets.py\033[0m")
+    print("")
 
     def removeEndl(x):
         spl = x.split('\n')
