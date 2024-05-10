@@ -74,7 +74,7 @@ def load_dataset(memory_length=7):
     
     def change_date_format(date):
         dateSpl = date.split('/')
-        return dateSpl[1]+"/"+dateSpl[0]+"/"+dateSpl[2]
+        return dateSpl[2]+"/"+dateSpl[1]+"/"+dateSpl[0]
 
     data = pd.concat(dataList)
     dayCol = data['JOUR']
@@ -107,14 +107,14 @@ def load_dataset(memory_length=7):
             elif c==memory_length:
                 Ls[memory_length-c-1].append(row['NB_VALD'])
                 libelle_list.append(libelle)
-                weekday.append(parse_prefix(row['JOUR'], '%m/%d/%y').weekday())
+                weekday.append(parse_prefix(row['JOUR'], '%Y/%m/%d').weekday())
                 
             else:
                 libelle_list.append(libelle)
                 for i in range(memory_length):
                     Ls[i].append(Ls[i+1][-1])
                 Ls[-1].append(row['NB_VALD'])
-                weekday.append(parse_prefix(row['JOUR'], '%m/%d/%y').weekday())
+                weekday.append(parse_prefix(row['JOUR'], '%Y/%m/%d').weekday())
             c+=1
     
     d = {"LIBELLE_LIGNE": libelle_list, 'WEEKDAY': weekday}
@@ -132,3 +132,4 @@ print("Saving...")
 data.to_csv(export_folder+export_path)
 
 print("Done")
+
