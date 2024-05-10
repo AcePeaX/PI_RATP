@@ -53,10 +53,12 @@ import_path = "dataset.csv"
 
 regression_column = "NBRE_VALIDATION"
 
+add_weekdays=1
+
 if(len(sys.argv)==1):
     print("")
     print("No argument specified, here is the template : ")
-    print("\tpy opening.py <regression_column=NBRE_VALIDATION> <dataset=dataset.csv>\n")
+    print("\tpy opening.py <regression_column=NBRE_VALIDATION> <add_weekdays(int)=1> <dataset=dataset.csv>\n")
     continue_str = input("Press enter to continue, type in 0 to exit ")
     if(continue_str=="0"):
         exit()
@@ -66,6 +68,10 @@ elif(len(sys.argv)==2):
 elif(len(sys.argv)==3):
     import_path = sys.argv[-1]
     regression_column = sys.argv[-2]
+elif(len(sys.argv)>=4):
+    import_path = sys.argv[-1]
+    add_weekdays = int(sys.argv[-2])
+    regression_column = sys.argv[-3]
 
 
 def summary(dataset):
@@ -107,8 +113,17 @@ def help():
 
 data = pd.read_csv(import_folder+import_path)
 
+if 'Unnamed: 0' in data.columns:
+    data = data.drop(columns=['Unnamed: 0'])
 if "LIBELLE_LIGNE" in data.columns:
     data = data.drop(columns=["LIBELLE_LIGNE"])
+if add_weekdays:
+    data["IS_SUNDAY"] = 0
+    data["IS_SATURDAY"] = 0
+    data.loc[data["WEEKDAY"]==5, "IS_SATURDAY"] = 1
+    data.loc[data["WEEKDAY"]==6, "IS_SUNDAY"] = 1
+if "WEEKDAY" in data.columns:
+    data = data.drop(columns=["WEEKDAY"])
 y = data[regression_column]
 x = data.drop(columns=[regression_column])
 
