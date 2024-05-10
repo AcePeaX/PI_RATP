@@ -11,7 +11,7 @@ from sklearn.linear_model import LinearRegression
 
 
 
-def normalize_manual(train_data, test_data, method='mean_std'):
+def normalize_data(train_data, test_data, method='mean_std'):
     """
     Normalizes all the features by linear transformation *except* for the target regression column
     specified as `col_regr`.
@@ -48,37 +48,6 @@ def normalize_manual(train_data, test_data, method='mean_std'):
 
 
 
-import_folder = str(Path(__file__).parent.resolve())+"/../datasets/"
-import_path = "dataset.csv"
-
-regression_column = "NBRE_VALIDATION"
-
-add_weekdays=1
-
-if(len(sys.argv)==1):
-    print("")
-    print("No argument specified, here is the template : ")
-    print("\tpy opening.py <regression_column=NBRE_VALIDATION> <add_weekdays(int)=1> <dataset=dataset.csv>\n")
-    continue_str = input("Press enter to continue, type in 0 to exit ")
-    if(continue_str=="0"):
-        exit()
-    print("")
-elif(len(sys.argv)==2):
-    import_path = sys.argv[-1]
-elif(len(sys.argv)==3):
-    import_path = sys.argv[-1]
-    regression_column = sys.argv[-2]
-elif(len(sys.argv)>=4):
-    import_path = sys.argv[-1]
-    add_weekdays = int(sys.argv[-2])
-    regression_column = sys.argv[-3]
-
-
-def summary(dataset):
-    print(f'Shape of the data {dataset.shape}')
-    print(dataset.head(5))
-    print(dataset.describe())
-    print('\n\n')
 
 def fit_and_predict(X_train, y_train, X_test, y_test, regressor, verbose=False):
     assert isinstance(regressor, LinearRegression) or isinstance(regressor, KNeighborsRegressor)
@@ -111,120 +80,160 @@ def help():
     print("- normalize()")
     print("")
 
-data = pd.read_csv(import_folder+import_path)
 
-if 'Unnamed: 0' in data.columns:
-    data = data.drop(columns=['Unnamed: 0'])
-if 'DATE' in data.columns:
-    data = data.drop(columns=['DATE'])
-if "LIBELLE_LIGNE" in data.columns:
-    data = data.drop(columns=["LIBELLE_LIGNE"])
-if add_weekdays:
-    data["IS_SUNDAY"] = 0
-    data["IS_SATURDAY"] = 0
-    data["IS_MONDAY"] = 0
-    data["IS_TUESDAY"] = 0
-    data["IS_WEDNESDAY"] = 0
-    data["IS_THURSDAY"] = 0
-    data.loc[data["WEEKDAY"]==5, "IS_SATURDAY"] = 1
-    data.loc[data["WEEKDAY"]==6, "IS_SUNDAY"] = 1
-    data.loc[data["WEEKDAY"]==0, "IS_MONDAY"] = 1
-    data.loc[data["WEEKDAY"]==1, "IS_TUESDAY"] = 1
-    data.loc[data["WEEKDAY"]==2, "IS_WEDNESDAY"] = 1
-    data.loc[data["WEEKDAY"]==3, "IS_THURSDAY"] = 1
-if "WEEKDAY" in data.columns:
-    data = data.drop(columns=["WEEKDAY"])
-y = data[regression_column]
-x = data.drop(columns=[regression_column])
-
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.03, random_state=4)
-
-y_pred = np.array(y_test)
-
-models = ["Linear","Knn"]
-model_used = 0
-
-def test_linear():
-    global y_pred
-    global model_used
-    global X_train
-    global y_train
-    global X_test
-    global y_test
-    model_used = 0
-    regressor = LinearRegression()
-    y_pred = fit_and_predict(X_train, y_train, X_test, y_test, regressor)
-
-def test_knn(n_neighbors=5):
-    global y_pred
-    global model_used
-    global X_train
-    global y_train
-    global X_test
-    global y_test
-    model_used = 1
-    regressor = KNeighborsRegressor(n_neighbors=n_neighbors)
-    y_pred = fit_and_predict(X_train, y_train, X_test, y_test, regressor)
-
-
-count = -1
-def evaluate():
-    global y_pred
-    global count
-    count = -1
-    print("Performance for "+models[model_used]+"model : ")
-    evaluate_performance(y_test, y_pred)
-    print('\nUse arrow keys up and down to navigate, and Q to exit\n')
-    try:    
-        from pynput.keyboard import Key, Listener
-    except e:
-        print('Execute : `pip install pynput` to get better control\n')
-        return
-        
-    y_test_array = np.array(y_test)
-    def handlePress(key):
-        global count
-        if key==Key.down:
-            count+=1
-            if count>=len(y_test):
-                count -= len(y_test)
-            print('\b\b\b\b\033[1A                              \r',str(count+1)+'/'+str(len(y_test))+" : ",y_test_array[count],' -> ',round(y_pred[count],1),sep='',end='\n')
-        elif key==Key.up:
-            count-=1
-            if count<0:
-                count += len(y_test)
-            print('\b\b\b\b\033[1A                              \r',str(count+1)+'/'+str(len(y_test))+" : ",y_test_array[count],' -> ',round(y_pred[count],1),sep='',end='\n')
-            
-        else:
-            try:
-                if key.char=='q' or key.char=='Q':
-                    print('\n')
-                    return False
-            except Exception:
-                print('',end='')
-    handlePress(Key.down)
-    with Listener(on_press = handlePress) as listener:
-        listener.join()
-    print("")
-        
-
-def normalize():
-    global X_train
-    global X_test
-    resp = input("This operation cannot be undone in this instance. \nChoose either 'mean_std' or 'maxmin' : ")
-    if(resp==""):
-        resp="mean_std"
-    elif resp=="maxmin":
-        resp=resp
-    elif resp!="":
-        print("Nothing Done! \n")
-        return
-    X_train, X_test = normalize_manual(X_train,X_test,resp)
-    print("Normalized!\n")
-    
 
 
 if __name__ == "__main__":
+    import_folder = str(Path(__file__).parent.resolve())+"/../datasets/"
+    import_path = "dataset.csv"
+
+    regression_column = "NBRE_VALIDATION"
+
+    add_weekdays=1
+
+    if(len(sys.argv)==1):
+        print("")
+        print("No argument specified, here is the template : ")
+        print("\tpy opening.py <regression_column=NBRE_VALIDATION> <add_weekdays(int)=1> <dataset=dataset.csv>\n")
+        continue_str = input("Press enter to continue, type in 0 to exit ")
+        if(continue_str=="0"):
+            exit()
+        print("")
+    elif(len(sys.argv)==2):
+        import_path = sys.argv[-1]
+    elif(len(sys.argv)==3):
+        import_path = sys.argv[-1]
+        regression_column = sys.argv[-2]
+    elif(len(sys.argv)>=4):
+        import_path = sys.argv[-1]
+        add_weekdays = int(sys.argv[-2])
+        regression_column = sys.argv[-3]
+
+
+    data = pd.read_csv(import_folder+import_path)
+
+    if 'Unnamed: 0' in data.columns:
+        data = data.drop(columns=['Unnamed: 0'])
+    if 'DATE' in data.columns:
+        data = data.drop(columns=['DATE'])
+    if "LIBELLE_LIGNE" in data.columns:
+        data = data.drop(columns=["LIBELLE_LIGNE"])
+    if add_weekdays:
+        data["IS_SUNDAY"] = 0
+        data["IS_SATURDAY"] = 0
+        data["IS_MONDAY"] = 0
+        data["IS_TUESDAY"] = 0
+        data["IS_WEDNESDAY"] = 0
+        data["IS_THURSDAY"] = 0
+        data.loc[data["WEEKDAY"]==5, "IS_SATURDAY"] = 1
+        data.loc[data["WEEKDAY"]==6, "IS_SUNDAY"] = 1
+        data.loc[data["WEEKDAY"]==0, "IS_MONDAY"] = 1
+        data.loc[data["WEEKDAY"]==1, "IS_TUESDAY"] = 1
+        data.loc[data["WEEKDAY"]==2, "IS_WEDNESDAY"] = 1
+        data.loc[data["WEEKDAY"]==3, "IS_THURSDAY"] = 1
+    if "WEEKDAY" in data.columns:
+        data = data.drop(columns=["WEEKDAY"])
+    y = data[regression_column]
+    x = data.drop(columns=[regression_column])
+
+    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.03, random_state=4)
+
+    y_pred = np.array(y_test)
+
+    models = ["Linear","Knn"]
+    model_used = 0
+
+    def test_linear():
+        global y_pred
+        global model_used
+        global X_train
+        global y_train
+        global X_test
+        global y_test
+        model_used = 0
+        regressor = LinearRegression()
+        y_pred = fit_and_predict(X_train, y_train, X_test, y_test, regressor)
+
+    def test_knn(n_neighbors=5):
+        global y_pred
+        global model_used
+        global X_train
+        global y_train
+        global X_test
+        global y_test
+        model_used = 1
+        regressor = KNeighborsRegressor(n_neighbors=n_neighbors)
+        y_pred = fit_and_predict(X_train, y_train, X_test, y_test, regressor)
+
+
+    count = -1
+    def evaluate():
+        global y_pred
+        global count
+        count = -1
+        print("Performance for "+models[model_used]+"model : ")
+        evaluate_performance(y_test, y_pred)
+        print('\nUse arrow keys up and down to navigate, and Q to exit\n')
+        try:    
+            from pynput.keyboard import Key, Listener
+        except e:
+            print('Execute : `pip install pynput` to get better control\n')
+            return
+            
+        y_test_array = np.array(y_test)
+        def handlePress(key):
+            global count
+            if key==Key.down:
+                count+=1
+                if count>=len(y_test):
+                    count -= len(y_test)
+                print('\b\b\b\b\033[1A                              \r',str(count+1)+'/'+str(len(y_test))+" : ",y_test_array[count],' -> ',round(y_pred[count],1),sep='',end='\n')
+            elif key==Key.up:
+                count-=1
+                if count<0:
+                    count += len(y_test)
+                print('\b\b\b\b\033[1A                              \r',str(count+1)+'/'+str(len(y_test))+" : ",y_test_array[count],' -> ',round(y_pred[count],1),sep='',end='\n')
+                
+            else:
+                try:
+                    if key.char=='q' or key.char=='Q':
+                        print('\n')
+                        return False
+                except Exception:
+                    print('',end='')
+        handlePress(Key.down)
+        with Listener(on_press = handlePress) as listener:
+            listener.join()
+        print("")
+            
+
+    def normalize():
+        global X_train
+        global X_test
+        resp = input("This operation cannot be undone in this instance. \nChoose either 'mean_std' or 'maxmin' : ")
+        if(resp==""):
+            resp="mean_std"
+        elif resp=="maxmin":
+            resp=resp
+        elif resp!="":
+            print("Nothing Done! \n")
+            return
+        X_train, X_test = normalize_data(X_train,X_test,resp)
+        print("Normalized!\n")
+        
+
+    def summary(dataset):
+        print(f'Shape of the data {dataset.shape}')
+        print(dataset.head(5))
+        print(dataset.describe())
+        print('\n\n')
+
+    
+
+
+
+
+
     summary(X_train)
     summary(y_train)
     print("Type help() for help.\n")
