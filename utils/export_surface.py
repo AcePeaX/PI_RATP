@@ -14,8 +14,15 @@ memory_length = 7
 
 
 datapaths_directory = "surface/"
-datapaths = ["data-rs-2016/2016S1_NB_SURFACE.txt","data-rs-2016/2016S2_NB_SURFACE.txt",
-             "data-rs-2017/2017S1_NB_SURFACE.txt","data-rs-2017/2017_T3_NB_SURFACE.txt","data-rs-2017/2017_T4_NB_SURFACE.txt"]
+datapaths = [
+             "data-rs-2016/2016S1_NB_SURFACE.txt","data-rs-2016/2016S2_NB_SURFACE.txt",
+             "data-rs-2017/2017S1_NB_SURFACE.txt","data-rs-2017/2017_T3_NB_SURFACE.txt","data-rs-2017/2017_T4_NB_SURFACE.txt",
+             "data-rs-2018/2018_T1_NB_SURFACE.txt","data-rs-2018/2018_T2_NB_SURFACE.txt","data-rs-2018/2018_T3_NB_SURFACE.txt","data-rs-2018/2018_T4_NB_SURFACE.txt",
+             "data-rs-2019/2019_T1_NB_SURFACE.txt","data-rs-2019/2019_T2_NB_SURFACE.txt","data-rs-2019/2019_T3_NB_SURFACE.txt","data-rs-2019/2019_T4_NB_SURFACE.txt",
+             "data-rs-2020/2020_T1_NB_SURFACE.txt","data-rs-2020/2020_T2_NB_SURFACE.txt","data-rs-2020/2020_T3_NB_SURFACE.txt","data-rs-2020/2020_T4_NB_SURFACE.txt",
+             "data-rs-2021/2021_T1_NB_SURFACE.txt","data-rs-2021/2021_T2_NB_SURFACE.txt","data-rs-2021/2021_T3_NB_SURFACE.txt","data-rs-2021/2021_T4_NB_SURFACE.txt",
+             "data-rs-2022/2022_T1_NB_SURFACE.txt","data-rs-2022/2022_T2_NB_SURFACE.txt",
+             ]
 
 if(len(sys.argv)==1):
     print("")
@@ -104,6 +111,7 @@ def load_dataset(memory_length=7):
             print("Done reading \033[1m"+datapaths_directory+datapath+"\033[0m")
         except Exception:
             print("File\033[1m",datapaths_directory+datapath,"\033[0mnot found, make sure you have downloaded it with \033[1mdownload_datasets.py\033[0m")
+        
     print("")
 
     def removeEndl(x):
@@ -146,7 +154,7 @@ def load_dataset(memory_length=7):
     for libelle in tqdm(keys):
         temp_df = dataGroup.get_group(libelle)
         c=0
-        if(len(temp_df)<memory_length):
+        if(len(temp_df)<=memory_length):
             continue
         for index, row in temp_df.iterrows():
             if(c<memory_length):
@@ -173,6 +181,8 @@ def load_dataset(memory_length=7):
     for i in range(memory_length):
         d["DAY_"+str(i+1)] = Ls[i]
     d["NBRE_VALIDATION"] = Ls[-1]
+    for key in d.keys():
+        print(key,len(d[key]))
     final_data = pd.DataFrame(data=d)
 
     print("Sorting...")
