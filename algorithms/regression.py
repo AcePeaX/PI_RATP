@@ -142,7 +142,7 @@ if __name__ == "__main__":
     y = data[regression_column]
     x = data.drop(columns=[regression_column])
 
-    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.03, random_state=4)
+    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=20000, random_state=4)
 
 
 
