@@ -77,7 +77,7 @@ def help():
     print("- test_linear()")
     print("- test_knn(n_neighbors)")
     print("- evaluate()")
-    print("- accuracy()")
+    print("- accuracy(threshold)")
     print("- normalize()")
     print("- set_log()")
     print("- remove_day(day)")

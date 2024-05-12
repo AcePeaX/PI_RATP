@@ -92,7 +92,10 @@ def help():
     print("Type in some of the following : ")
     print("- test_SVR(kernel='rbf', degree=3, C=1.0, epsilon=0.1, gamma='scale')")
     print("- evaluate()")
+    print("- accuracy(threshold)")
     print("- normalize()")
+    print("- set_log()")
+    print("- remove_day(day)")
     print("")
 
 
@@ -151,7 +154,7 @@ if __name__ == "__main__":
     y = data[regression_column]
     x = data.drop(columns=[regression_column])
 
-    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.03, random_state=4)
+    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=7000, random_state=4)
     X_train = X_train[:20000]
     y_train = y_train[:20000]
     X_test = X_test[:5000]
@@ -162,8 +165,53 @@ if __name__ == "__main__":
     models = ["Linear","Knn"]
     model_used = 0
 
-    
+    is_log=False
+    def get_value(x):
+        global is_log
+        if(is_log):
+            return round(np.exp(x)-1,1)
+        else:
+            return round(x,1)
+    def set_log():
+        global is_log
+        global y_test
+        global y_train
+        global X_test
+        global X_train
+        if(not is_log):
+            is_log=True
+            y_train = np.log(y_train.copy()+1)
+            y_test = np.log(y_test.copy()+1)
+            for i in range(1,8):
+                try:
+                    X_test['DAY_'+str(i)] = np.log(X_test['DAY_'+str(i)]+1)
+                    X_train['DAY_'+str(i)] = np.log(X_train['DAY_'+str(i)]+1)
+                finally:
+                    ""
+            print("Done!")
+        else:
+            print("Already Done!")
 
+    def accuracy(threshold=0.1):
+        global y_pred
+        global y_test
+        accuracy = 0
+        c = 0
+        y_test_arr = np.array(y_test)
+        mean_value = 0
+        overall_mean = 0
+        for i in range(len(y_pred)):
+            if y_test_arr[i]!=0:
+                c += 1
+                overall_mean += get_value(y_test_arr[i])
+                if(abs(get_value(y_test_arr[i])-get_value(y_pred[i]))/get_value(y_test_arr[i])<threshold):
+                    accuracy += 1
+                    mean_value += get_value(y_test_arr[i])
+        mean_value /= accuracy
+        overall_mean /= c
+        accuracy /= c
+        print("The validation accuracy at a threshold of",threshold,"is :",accuracy)
+        print("The mean of the positive tests is",round(mean_value,1),"while the overall mean is",round(overall_mean,1))
 
     count = -1
     def evaluate():
@@ -219,6 +267,20 @@ if __name__ == "__main__":
             return
         X_train, X_test = normalize_data(X_train,X_test,resp)
         print("Normalized!\n")
+
+    def remove_day(day=None):
+        global X_test
+        global X_train
+        if day==None:
+            print("You need to specify which day(int), here are the available days :",[col for col in X_train.columns if "DAY_" in col],"\n")
+        elif isinstance(day, int):
+            try:
+                X_test = X_test.drop(columns=['DAY_'+str(day)])
+                X_train = X_train.drop(columns=['DAY_'+str(day)])
+            except:
+                print("Error")
+        else:
+            print(day,"is not an int")
         
 
     def summary(dataset):
