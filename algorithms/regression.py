@@ -108,7 +108,7 @@ if __name__ == "__main__":
         import_path = sys.argv[-1]
     elif(len(sys.argv)==3):
         import_path = sys.argv[-1]
-        regression_column = sys.argv[-2]
+        add_weekdays = int(sys.argv[-2])
     elif(len(sys.argv)>=4):
         import_path = sys.argv[-1]
         add_weekdays = int(sys.argv[-2])
