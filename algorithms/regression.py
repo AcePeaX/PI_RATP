@@ -247,7 +247,7 @@ if __name__ == "__main__":
         print('\nUse arrow keys up and down to navigate, and Q to exit\n')
         try:    
             from pynput.keyboard import Key, Listener
-        except e:
+        except Exception:
             print('Execute : `pip install pynput` to get better control\n')
             return
             
