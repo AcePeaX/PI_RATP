@@ -25,3 +25,7 @@ In the `utils` folder, you will find some scripts to *bake* the data. Here are t
 
 In the `algorithms` folder, there are the **algorithms** used for learning and fitting the models.
 - `regression.py` provides an interactive menu to test and run both **linear** and **knn** regression.
+
+
+
+The file `plot_result.py` is just for plotting some results that we've got.
